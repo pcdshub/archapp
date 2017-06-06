@@ -1,0 +1,13 @@
+#!/bin/bash
+unset PYTHONPATH
+unset LD_LIBRARY_PATH
+
+export PSPKG_ROOT=/reg/g/pcds/pkg_mgr
+export PSPKG_RELEASE=controls-0.1.8
+source $PSPKG_ROOT/etc/set_env.sh
+
+DIR=`dirname $( readlink -f "${BASH_SOURCE[0]}" )`
+
+source /reg/g/pcds/setup/pathmunge.sh
+pythonpathmunge $DIR/../lib
+pathmunge $DIR

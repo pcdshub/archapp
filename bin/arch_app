@@ -1,0 +1,8 @@
+#!/bin/bash
+cd `dirname -- $(readlink -f $0)`
+source arch_env
+if [ $# -eq 0 ]; then
+    ipython -i command_line.py
+else
+    python command_line.py $@
+fi
