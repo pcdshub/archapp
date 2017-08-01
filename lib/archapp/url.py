@@ -1,9 +1,9 @@
 """
 url.py defines basic url utilities
 """
-from __future__ import print_function
+
 import signal
-import urllib
+import urllib.request, urllib.parse, urllib.error
 try: import simplejson as json
 except: import json
 from .doc_sub import doc_sub
@@ -66,7 +66,7 @@ def get_json(url, timeout=1):
     signal.signal(signal.SIGALRM, _raise_timeout)
     signal.alarm(timeout)
     try:
-        http = urllib.urlopen(url)
+        http = urllib.request.urlopen(url)
     except (UrlTimeout, IOError):
         print("No conection to archiver.")
         return {}
@@ -96,7 +96,7 @@ def url_quote(url):
         url with properly quoted reserved characters
     """
     parts = url.split("?")
-    parts[1] = urllib.quote(parts[1], safe="=&")
+    parts[1] = urllib.parse.quote(parts[1], safe="=&")
     url = "?".join(parts)
     return url
 

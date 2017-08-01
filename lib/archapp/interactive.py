@@ -1,7 +1,7 @@
 """
 interactive.py defines ipython archive interface
 """
-from __future__ import print_function
+
 import datetime as dt
 
 from . import config
@@ -110,7 +110,7 @@ class EpicsArchive(object):
         """
         Given globs or list of globs, expand to the full set of pvs to look up
         """
-        if isinstance(pvname, basestring):
+        if isinstance(pvname, str):
             return self.search(pvname, do_print=False)
         elif isinstance(pvname, (list, tuple)):
             pvs = []

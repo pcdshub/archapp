@@ -97,7 +97,7 @@ class ArchiveData(object):
         -------
         {xarray}
         """
-        if isinstance(pvs, basestring):
+        if isinstance(pvs, str):
             data = self.get_raw(pvs, start, end, chunk=chunk)
             return make_xarray(data)
         else:
@@ -158,13 +158,13 @@ def make_xarray(data):
 
     for i, pt in enumerate(points):
         vals[i] = pt["val"]
-        utc = np.datetime64(long(pt["secs"]*1e9+pt["nanos"]), "ns")
+        utc = np.datetime64(int(pt["secs"]*1e9+pt["nanos"]), "ns")
         times[i] = utc - np.timedelta64(utc_delta())
         sevr[i] = pt["severity"]
         stat[i] = pt["status"]
         try:
             fields = pt["fields"]
-            for fld, fldval in fields.items():
+            for fld, fldval in list(fields.items()):
                 if fld not in skipfields:
                     meta[fld] = fldval
         except KeyError:

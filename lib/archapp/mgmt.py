@@ -1,7 +1,7 @@
 """
 mgmt.py defines pv management interface
 """
-from __future__ import print_function
+
 
 from . import config
 from .doc_sub import doc_sub
