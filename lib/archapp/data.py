@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import xarray as xr
 
+from datetime import datetime
 from . import config
 from .dates import utc_delta
 from .doc_sub import doc_sub

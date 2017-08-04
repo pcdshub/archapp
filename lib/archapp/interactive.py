@@ -3,7 +3,10 @@ interactive.py defines ipython archive interface
 """
 
 import datetime as dt
+import matplotlib.pyplot as plt
+import numpy as np
 
+from datetime import datetime
 from . import config
 from . import data
 from . import mgmt
@@ -146,6 +149,27 @@ class EpicsArchive(object):
         plot_handle
         """
         xarr = self.get(pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True)
+        #print (xarr)
+        df = xarr.to_dataframe()
+        #return df
+        values = df[pvname]['vals']
+        sevrs = df[pvname]['sevr']
+        #return values
+        dft = xarr['time'].to_dataframe()['time']
+        #return xarr.to_dataframe()        
+        #return xarr# DOING test_plot = arch.plot("pvname") --> test_plot.to_dataframe yeilds the same Pandas dataframe!
+
+        #plt.plot(sevrs, values)
+        #plt.scatter(sevrs, values)
+        plt.plot_date(dft, values, linestyle='solid', marker='None')
+        plt.title(pvname)
+        plt.xlabel(unit)
+        plt.xticks(rotation=60)
+        plt.ylabel('vals')
+        plt.show()
+
+
+
 
     def search(self, glob, do_print=True):
         return self._mgmt.search_pvs(glob, do_print=do_print)
