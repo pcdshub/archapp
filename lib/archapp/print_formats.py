@@ -1,7 +1,7 @@
 """
 print_formats.py defines utilities for formatting text data
 """
-from __future__ import print_function
+
 import os
 import math
 
@@ -31,7 +31,7 @@ def print_xarray(xarr, field, fill=True):
         print(df.to_string())
     else:
         shortest = None
-        for pv in df.keys():
+        for pv in list(df.keys()):
             nchar = len(pv)
             if shortest is None or nchar < shortest:
                 shortest = nchar

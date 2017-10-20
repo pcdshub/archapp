@@ -32,7 +32,7 @@ def doc_sub_txt(txt, **shared):
     if not target_lines:
         return txt 
     indent_levels = {}
-    for key, line in target_lines.items():
+    for key, line in list(target_lines.items()):
         indent = 0 
         for c in line:
             if c == " ":
@@ -41,7 +41,7 @@ def doc_sub_txt(txt, **shared):
                 break
         indent_levels[key] = indent
     indented_text = {}
-    for key, doc in shared.items():
+    for key, doc in list(shared.items()):
         if doc[0] == "\n":
             doc = doc[1:]
         if doc[-1] == "\n":

@@ -36,10 +36,11 @@ def utc_delta():
     delta : datetime.timedelta
         timedelta object that represents the UTC offset
     """
+    global delta
     if delta is None:
-        global delta
         now = time.time()
         local_now = dt.datetime.fromtimestamp(now)
         utc_now = dt.datetime.utcfromtimestamp(now)
         delta = utc_now - local_now
     return delta
+
