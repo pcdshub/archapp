@@ -1,0 +1,31 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: pcdsdevices
+  version : {{ data.get('version') }}
+
+source:
+  path: ..
+
+build:
+  number: 1
+  noarch: python
+
+requirements:
+  build:
+    - python >=3.6
+    - setuptools
+
+  run:
+    - python >=3.6
+    - numpy
+    - xarray
+
+test:
+  imports:
+    - archapp
+
+about:
+  home: https://github.com/pcdshub/archapp
+  license: SLAC Open License
+  summary: Archive Appliance Python Interface
