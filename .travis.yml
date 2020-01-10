@@ -27,29 +27,16 @@ install:
   - conda build -q conda-recipe --python $TRAVIS_PYTHON_VERSION --output-folder bld-dir
   - conda config --add channels "file://`pwd`/bld-dir"
   #Grab all dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION archapp --file dev-requirements.txt
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION archapp
   #Launch Conda environment
   - source activate test-environment
 
 script:
-  - coverage run run_tests.py
-  - coverage report -m
+  - python -m unittest discover -v
   - flake8 archapp/*.py
   - flake8 tests/*.py
-  - set -e
-  # Build docs
-  - conda install --file docs-requirements.txt
-  - pushd docs
-  - make html
-  - popd
-  # Upload docs
-  #- |
-  #  if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_PCDSDEVICES" && $BUILD_DOCS ]]; then
-  #    doctr deploy . --built-docs docs/build/html --deploy-branch-name gh-pages
-  #  fi
-
+ 
 after_success:
-  - codecov
   - |
     if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' && $CONDA_UPLOAD_TOKEN_TAG != '' ]]; then
       export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_TAG
