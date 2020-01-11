@@ -1,0 +1,47 @@
+language: python
+sudo: false
+
+env:
+  global:
+    - OFFICIAL_REPO="pcdshub/archapp"
+    - secure: ""
+matrix: 
+  include:
+    - python: 3.6
+      env: BUILD_DOCS=1
+    - python: 3.7
+
+install:
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda install conda-build anaconda-client
+  - conda update -q conda conda-build
+  - conda config --add channels pcds-tag
+  - conda config --append channels conda-forge
+  # Useful for debugging any issues with conda
+  - conda info -a
+  # Test conda build
+  - conda build -q conda-recipe --python $TRAVIS_PYTHON_VERSION --output-folder bld-dir
+  - conda config --add channels "file://`pwd`/bld-dir"
+  #Grab all dependencies
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION archapp
+  #Launch Conda environment
+  - source activate test-environment
+
+script:
+  - echo "HELLO WORLD!"
+
+after_success:
+  - |
+    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' && $CONDA_UPLOAD_TOKEN_TAG != '' ]]; then
+      export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_TAG
+      anaconda upload bld-dir/noarch/*.tar.bz2
+    fi
+  - |
+    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == 'master' && $TRAVIS_TAG == '' && $CONDA_UPLOAD_TOKEN_DEV != '' ]]; then
+      export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_DEV
+      anaconda upload bld-dir/noarch/*.tar.bz2
+    fi
