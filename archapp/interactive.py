@@ -83,6 +83,7 @@ class EpicsArchive(object):
         """
         self._data = data.ArchiveData(hostname, data_port)
         self._mgmt = mgmt.ArchiveMgmt(hostname, mgmt_port)
+        self._last_pvname = None
 
     @doc_sub(args=interactive_args)
     def get(self, pvname=None, start=30, end=None, unit="days", chunk=False, xarray=False):
@@ -101,13 +102,24 @@ class EpicsArchive(object):
         data : np.ndarray or xarray
         """
         if pvname is None:
-            raise NotImplementedError()
+            pvname = self._last_pvname
+            if pvname is None:
+                raise ValueError('No cached pvname. Must provide the '
+                                 'first pvname of the session.')
+        else:
+            self._last_pvname = pvname
+
         pvs = self._expand_pvnames(pvname)
         dt_objs = sorted(interactive_args(start, end, unit))
         xarr = self._data.get(pvs, dt_objs[0], dt_objs[1], chunk=chunk)
         if xarray:
             return xarr
-        raise NotImplementedError()
+        # Unpack the xarray as a np.ndarray of just the values
+        values = [np.datetime_as_string(xarr.time.values)]
+        for var in xarr.variables:
+            if var not in ('time', 'field'):
+                values.append(xarr[var].values[0])
+        return np.column_stack(values)
 
     def _expand_pvnames(self, pvname):
         """
