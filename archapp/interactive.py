@@ -80,7 +80,33 @@ class EpicsArchive(object):
         {host}
         {data}
         {mgmt}
+
+        Methods
+        -------
+        get
+            Return timeseries data from the archiver as an xarray or numpy array.
+
+        plot
+            Plot timeseries data from the archiver in a new figure.
+
+        prints
+            Print timeseries data from the archiver.
+
+        search
+            Queries the archiver with a PV search using glob format.
+
+        Examples
+        --------
+        To get data, use:
+        >>> data = archive.get("pv_name", xarray=True)
+
+        To get the data in a data frame format:
+        >>> data.to_dataframe()
+
+        To get values of the data frame, such as vals or stat, for example:
+        >>> data.to_dataframe()['pv_name']['vals']
         """
+
         self._data = data.ArchiveData(hostname, data_port)
         self._mgmt = mgmt.ArchiveMgmt(hostname, mgmt_port)
         self._last_pvname = None
