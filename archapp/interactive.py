@@ -3,7 +3,6 @@ interactive.py defines ipython archive interface
 """
 
 import datetime as dt
-import matplotlib.pyplot as plt
 import numpy as np
 
 from datetime import datetime
@@ -186,6 +185,7 @@ class EpicsArchive(object):
         -------
         plot_handle
         """
+        import matplotlib.pyplot as plt
         xarr = self.get(pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True)
         #print (xarr)
         df = xarr.to_dataframe()
@@ -206,12 +206,10 @@ class EpicsArchive(object):
         plt.ylabel('vals')
         plt.show()
 
-
-
-
     def search(self, glob, do_print=True):
         return self._mgmt.search_pvs(glob, do_print=do_print)
     search.__doc__ = mgmt.ArchiveMgmt.search_pvs.__doc__
+
 
 @doc_sub(date_args=date_args)
 def interactive_args(start, end, unit):
