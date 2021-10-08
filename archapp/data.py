@@ -1,10 +1,6 @@
 """
 data.py defines how to extract data from the archive appliance
 """
-import datetime as dt
-import time
-from datetime import datetime
-
 import numpy as np
 import xarray as xr
 
