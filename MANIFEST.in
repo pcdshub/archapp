@@ -1,0 +1,6 @@
+include setup.cfg
+include versioneer.py
+include requirements.txt
+include LICENSE.md
+
+include archapp/_version.py

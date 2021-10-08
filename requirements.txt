@@ -1,0 +1,4 @@
+matplotlib
+numpy
+pandas
+xarray>=0.19.0
