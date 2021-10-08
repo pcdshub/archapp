@@ -7,13 +7,19 @@ import xarray as xr
 from . import config
 from .dates import utc_delta
 from .doc_sub import doc_sub
-from .url import (PV_ARG, URL_ARG, URL_FLAG, arch_url, data_port_doc, get_json,
-                  hostname_doc)
+from .url import (
+    PV_ARG,
+    URL_ARG,
+    URL_FLAG,
+    arch_url,
+    data_port_doc,
+    get_json,
+    hostname_doc,
+)
 
 GET_URL = "/retrieval/data/getData.json"
 
-url_args = \
-"""
+url_args = """
 pvs : string or list of string
     pv or pvs to look up in the archiver
 start : datetime
@@ -24,14 +30,12 @@ chunk : bool
     if True, chunk data
 """
 
-xarray_doc = \
-"""
+xarray_doc = """
 data : xarray.DataArray
     timestamped data with metadata
 """
 
-raw_doc = \
-"""
+raw_doc = """
 data : dict
     Raw data from the archiver. This is a dictionary with the following keymap:
     {
@@ -60,6 +64,7 @@ data : dict
     }
 """
 
+
 class ArchiveData(object):
     """
     Class to get data from the archiver.
@@ -69,6 +74,7 @@ class ArchiveData(object):
     base_url : string
         url to make data queries at
     """
+
     @doc_sub(hostname=hostname_doc, data_port=data_port_doc)
     def __init__(self, hostname=config.hostname, data_port=config.data_port):
         """
@@ -122,6 +128,7 @@ class ArchiveData(object):
         data = get_json(url)
         return data
 
+
 @doc_sub(raw=raw_doc, xarray=xarray_doc)
 def make_xarray(data):
     """
@@ -156,7 +163,7 @@ def make_xarray(data):
 
     for i, pt in enumerate(points):
         vals[i] = pt["val"]
-        utc = np.datetime64(int(pt["secs"]*1e9+pt["nanos"]), "ns")
+        utc = np.datetime64(int(pt["secs"] * 1e9 + pt["nanos"]), "ns")
         times[i] = utc - np.timedelta64(utc_delta())
         sevr[i] = pt["severity"]
         stat[i] = pt["status"]
@@ -167,12 +174,17 @@ def make_xarray(data):
                     meta[fld] = fldval
         except KeyError:
             pass
-        
+
     field_names = ["vals", "sevr", "stat"]
-    data_xarray = xr.DataArray(data_ndarray, coords=[field_names, times],
-                               dims=["field", "time"], name=meta["name"],
-                               attrs=meta)
+    data_xarray = xr.DataArray(
+        data_ndarray,
+        coords=[field_names, times],
+        dims=["field", "time"],
+        name=meta["name"],
+        attrs=meta,
+    )
     return data_xarray
+
 
 @doc_sub(args=url_args)
 def make_url(base_url, pv, start, end, chunk=False):
@@ -188,12 +200,16 @@ def make_url(base_url, pv, start, end, chunk=False):
     url : string
         full url used to request data
     """
-    url = (base_url + PV_ARG.format(pv)
-          + URL_ARG.format("from", date_spec(start))
-          + URL_ARG.format("to", date_spec(end)))
+    url = (
+        base_url
+        + PV_ARG.format(pv)
+        + URL_ARG.format("from", date_spec(start))
+        + URL_ARG.format("to", date_spec(end))
+    )
     if not chunk:
         url += URL_FLAG.format("donotchunk")
     return url
+
 
 def date_spec(dtobj):
     """
@@ -216,7 +232,7 @@ def date_spec(dtobj):
     #    Z at the end if no timezone offset (enforce always Z and use UTC)
     n = iso.find(".")
     if n > 0:
-        iso = iso[:n+4] + "Z"
+        iso = iso[: n + 4] + "Z"
     else:
         iso += ".000Z"
     return iso

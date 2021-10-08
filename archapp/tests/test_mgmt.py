@@ -14,12 +14,12 @@ class ArchiveMgmtTestCase(unittest.TestCase):
 
     def test_search_bad_pv(self):
         pvs = self.arch.search_pvs("junkjunktestjunk", do_print=False)
-        self.assertEqual(pvs, [],
-            "Recieved {0} instead of empty list!".format(pvs))
+        self.assertEqual(pvs, [], "Recieved {0} instead of empty list!".format(pvs))
 
     def test_search_print_no_crash(self):
         pvs = self.arch.search_pvs("", do_print=True)
         pvs = self.arch.search_pvs("XPP:USR:MMS:01", do_print=True)
+
 
 class ArchiveMgmtBadTestCase(unittest.TestCase):
     def test_search_bad_hostname(self):
