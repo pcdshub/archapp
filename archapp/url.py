@@ -3,32 +3,35 @@ url.py defines basic url utilities
 """
 
 import signal
-import urllib.request, urllib.parse, urllib.error
-try: import simplejson as json
-except: import json
+import urllib.error
+import urllib.parse
+import urllib.request
+
+try:
+    import simplejson as json
+except:
+    import json
 from .doc_sub import doc_sub
 
 PV_ARG = "?pv={0}"
 URL_ARG = "&{0}={1}"
 URL_FLAG = "&{0}"
 
-hostname_doc = \
-"""
+hostname_doc = """
 hostname : string
     archiver appliance host
 """
 
-data_port_doc = \
-"""
+data_port_doc = """
 data_port : int
     port on host that has the retrieval directory
 """
 
-mgmt_port_doc = \
-"""
+mgmt_port_doc = """
 mgmt_port : int
     port on host that has the mgmt directory
 """
+
 
 @doc_sub(hostname=hostname_doc)
 def arch_url(hostname, port, ext):
@@ -44,6 +47,7 @@ def arch_url(hostname, port, ext):
         directory that hosts the desired service
     """
     return "http://" + hostname + ":" + str(port) + ext
+
 
 def get_json(url, timeout=1):
     """
@@ -81,6 +85,7 @@ def get_json(url, timeout=1):
     else:
         return data
 
+
 def url_quote(url):
     """
     Properly quotes reserved characters for the http request.
@@ -100,6 +105,7 @@ def url_quote(url):
     url = "?".join(parts)
     return url
 
+
 def check_error(http):
     """
     Checks for http errors (400 series) and returns True if an error exists.
@@ -113,13 +119,15 @@ def check_error(http):
     has_error : bool
     """
     err = http.code
-    if 400<= err < 500:
+    if 400 <= err < 500:
         print("HTTP error {}. Make sure your PV exists.".format(err))
         return True
     return False
 
+
 def _raise_timeout(signum, frame):
     raise UrlTimeout()
+
 
 class UrlTimeout(Exception):
     pass

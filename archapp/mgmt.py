@@ -6,15 +6,16 @@ mgmt.py defines pv management interface
 from . import config
 from .doc_sub import doc_sub
 from .print_formats import list_print
-from .url import arch_url, get_json, PV_ARG
-from .url import hostname_doc, mgmt_port_doc
+from .url import PV_ARG, arch_url, get_json, hostname_doc, mgmt_port_doc
 
 MGMT_URL = "/mgmt/bpl/"
+
 
 class ArchiveMgmt(object):
     """
     Class to get metadata and manage pvs in the archiver.
     """
+
     @doc_sub(hostname=hostname_doc, mgmt_port=mgmt_port_doc)
     def __init__(self, hostname=config.hostname, mgmt_port=config.mgmt_port):
         """
@@ -26,7 +27,7 @@ class ArchiveMgmt(object):
         self.base_url = arch_url(hostname, mgmt_port, MGMT_URL)
 
     def search_pvs(self, glob, do_print=True):
-        """ 
+        """
         Queries the archiver with a PV search using glob format.
 
         Parameters

@@ -2,8 +2,10 @@
 file_formats.py defines file outputs from input xarray objects
 """
 import copy
+
 import numpy as np
 import pandas as pd
+
 
 def load_pvnames(filename):
     """
@@ -13,9 +15,10 @@ def load_pvnames(filename):
         lines = f.readlines()
         return [l[:-1] for l in lines]
 
+
 def csv_coll(xarray, pv, avg_period=None):
-    data = xarray[pv][0].values # numeric
-    times = xarray[pv].time.values # datetime64
+    data = xarray[pv][0].values  # numeric
+    times = xarray[pv].time.values  # datetime64
     # strip nans
     d = []
     t = []
@@ -30,18 +33,21 @@ def csv_coll(xarray, pv, avg_period=None):
         out = str(ts_array[0])
         delims = "-- ::"
         for i, d in enumerate(delims):
-            try: out += d + str(ts_array[i+1])
-            except: return out
+            try:
+                out += d + str(ts_array[i + 1])
+            except:
+                return out
         return out
 
     periods = ("year", "month", "day", "hour", "minute", "second")
+
     def stat_append(vals, methods, lists):
         for m, lst in zip(methods, lists):
             lst.append(m(vals))
 
     def tim_spec(dt64, spec):
         timestamp = pd.to_datetime(dt64)
-        return [getattr(timestamp, periods[i]) for i in range(spec+1)]
+        return [getattr(timestamp, periods[i]) for i in range(spec + 1)]
 
     if avg_period is not None:
         coll = [(pv, "avg", "min", "max")]
@@ -63,17 +69,16 @@ def csv_coll(xarray, pv, avg_period=None):
                 elif tim == curr_time:
                     curr_vals.append(val)
                 else:
-                    stat_append(curr_vals,
-                        [np.mean, np.min, np.max],
-                        [avg, min, max])
+                    stat_append(curr_vals, [np.mean, np.min, np.max], [avg, min, max])
                     t.append(out_str(curr_time))
                     curr_time = None
             if curr_time is not None and curr_vals:
-                stat_append(curr_vals,
-                    [np.mean, np.min, np.max],
-                    [avg, min, max])
+                stat_append(curr_vals, [np.mean, np.min, np.max], [avg, min, max])
                 t.append(out_str(curr_time))
-            combined = [(str(t[n]), str(avg[n]), str(min[n]), str(max[n])) for n in range(len(t))]
+            combined = [
+                (str(t[n]), str(avg[n]), str(min[n]), str(max[n]))
+                for n in range(len(t))
+            ]
         else:
             print("bad avg_period, must be in {}".format(periods))
             return coll
@@ -86,14 +91,15 @@ def csv_coll(xarray, pv, avg_period=None):
     coll.extend(combined)
     return coll
 
+
 def build_csv(colls, filename=None):
     colls = copy.copy(colls)
     lens = [len(c) for c in colls]
     max_len = max(lens)
     for c in colls:
         while len(c) < max_len:
-            #c.append(("",""))
-            c.append([""]*len(c[0]))
+            # c.append(("",""))
+            c.append([""] * len(c[0]))
 
     lines = []
     for i in range(max_len):
@@ -104,7 +110,7 @@ def build_csv(colls, filename=None):
             if not lines[i]:
                 lines[i] = txt
             else:
-                lines[i] = ",".join((lines[i],txt))
+                lines[i] = ",".join((lines[i], txt))
     for i in range(len(lines)):
         lines[i] += "\n"
     if filename:
@@ -113,7 +119,7 @@ def build_csv(colls, filename=None):
     else:
         for line in lines:
             print(line)
-   
+
 
 def csv(xarray, filename=None, sync_timestamps=False):
     """
@@ -131,7 +137,11 @@ def csv(xarray, filename=None, sync_timestamps=False):
             coll = [(pv, xarray[pv].attrs.get("DESC", ""))]
             data = xarray[pv][0].values
             times = xarray[pv].time.values
-            data = [(str(times[n]), str(data[n])) for n in range(len(data)) if not np.isnan(data[n])]
+            data = [
+                (str(times[n]), str(data[n]))
+                for n in range(len(data))
+                if not np.isnan(data[n])
+            ]
             coll.extend(data)
             colls.append(coll)
     lens = [len(c) for c in colls]
@@ -141,7 +151,7 @@ def csv(xarray, filename=None, sync_timestamps=False):
         max_len = 0
     for c in colls:
         while len(c) < max_len:
-            c.append(("",""))
+            c.append(("", ""))
     lines = []
     for i in range(max_len):
         lines.append([])
@@ -151,11 +161,10 @@ def csv(xarray, filename=None, sync_timestamps=False):
             if not lines[i]:
                 lines[i] = txt
             else:
-                lines[i] = ",".join((lines[i],txt))
+                lines[i] = ",".join((lines[i], txt))
     if filename:
         with open(filename, "w") as f:
             f.writelines(lines)
     else:
         for line in lines:
             print(line)
-

@@ -3,19 +3,17 @@ interactive.py defines ipython archive interface
 """
 
 import datetime as dt
+from datetime import datetime
+
 import numpy as np
 
-from datetime import datetime
-from . import config
-from . import data
-from . import mgmt
-from .doc_sub import doc_sub, doc_sub_txt
+from . import config, data, mgmt
 from .dates import days_map, units_rule
+from .doc_sub import doc_sub, doc_sub_txt
 from .print_formats import print_xarray
-from .url import hostname_doc, data_port_doc, mgmt_port_doc
+from .url import data_port_doc, hostname_doc, mgmt_port_doc
 
-interactive_args = \
-"""
+interactive_args = """
 pvname : string or list of strings, optional
     Pv or pvs to look up in the archiver. You can include glob
     wildcards in the pv name and we will look up all matching pvs.
@@ -27,8 +25,7 @@ chunk : bool, optional
     If True, chunk the data
 """
 
-time_args = \
-"""
+time_args = """
 Time can be designated in three ways:
     1. A number, to designate "units of time ago".
        For example, if units='days', 30 means 30 days ago.
@@ -43,36 +40,41 @@ Time can be designated in three ways:
     The list and datetime objects are in the local timezone.
 """
 
-date_arg = \
-"""
+date_arg = """
 {{0}} : number, list of int, or datetime, optional
     {{1}} time in the archiver{{2}}
     {time_args}
 """
 date_arg = doc_sub_txt(date_arg, time_args=time_args)
 
-date_args = \
-"""
+date_args = """
 {start}
 
 {end}
 
 {units_rule}
 """
-date_args = doc_sub_txt(date_args,
+date_args = doc_sub_txt(
+    date_args,
     start=date_arg.format("start", "Start", ", default is 30 days ago."),
     end=date_arg.format("end", "End", ", default is now, the present time."),
-    units_rule=units_rule)
+    units_rule=units_rule,
+)
 interactive_args = doc_sub_txt(interactive_args, date_args=date_args)
+
 
 class EpicsArchive(object):
     """
     Interactive interface to an Archive Appliance
     """
+
     @doc_sub(host=hostname_doc, data=data_port_doc, mgmt=mgmt_port_doc)
-    def __init__(self, hostname=config.hostname,
-                       data_port=config.data_port,
-                       mgmt_port=config.mgmt_port):
+    def __init__(
+        self,
+        hostname=config.hostname,
+        data_port=config.data_port,
+        mgmt_port=config.mgmt_port,
+    ):
         """
         Parameters
         ----------
@@ -111,7 +113,9 @@ class EpicsArchive(object):
         self._last_pvname = None
 
     @doc_sub(args=interactive_args)
-    def get(self, pvname=None, start=30, end=None, unit="days", chunk=False, xarray=False):
+    def get(
+        self, pvname=None, start=30, end=None, unit="days", chunk=False, xarray=False
+    ):
         """
         Return timeseries data from the archiver.
 
@@ -129,8 +133,9 @@ class EpicsArchive(object):
         if pvname is None:
             pvname = self._last_pvname
             if pvname is None:
-                raise ValueError('No cached pvname. Must provide the '
-                                 'first pvname of the session.')
+                raise ValueError(
+                    "No cached pvname. Must provide the " "first pvname of the session."
+                )
         else:
             self._last_pvname = pvname
 
@@ -142,7 +147,7 @@ class EpicsArchive(object):
         # Unpack the xarray as a np.ndarray of just the values
         values = [np.datetime_as_string(xarr.time.values)]
         for var in xarr.variables:
-            if var not in ('time', 'field'):
+            if var not in ("time", "field"):
                 values.append(xarr[var].values[0])
         return np.column_stack(values)
 
@@ -169,7 +174,9 @@ class EpicsArchive(object):
         ---------
         {args}
         """
-        xarr = self.get(pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True)
+        xarr = self.get(
+            pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True
+        )
         print_xarray(xarr, "vals")
 
     @doc_sub(args=interactive_args)
@@ -186,28 +193,32 @@ class EpicsArchive(object):
         plot_handle
         """
         import matplotlib.pyplot as plt
-        xarr = self.get(pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True)
-        #print (xarr)
-        df = xarr.to_dataframe()
-        #return df
-        values = df[pvname]['vals']
-        sevrs = df[pvname]['sevr']
-        #return values
-        dft = xarr['time'].to_dataframe()['time']
-        #return xarr.to_dataframe()        
-        #return xarr# DOING test_plot = arch.plot("pvname") --> test_plot.to_dataframe yeilds the same Pandas dataframe!
 
-        #plt.plot(sevrs, values)
-        #plt.scatter(sevrs, values)
-        plt.plot_date(dft, values, linestyle='solid', marker='None')
+        xarr = self.get(
+            pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True
+        )
+        # print (xarr)
+        df = xarr.to_dataframe()
+        # return df
+        values = df[pvname]["vals"]
+        sevrs = df[pvname]["sevr"]
+        # return values
+        dft = xarr["time"].to_dataframe()["time"]
+        # return xarr.to_dataframe()
+        # return xarr# DOING test_plot = arch.plot("pvname") --> test_plot.to_dataframe yeilds the same Pandas dataframe!
+
+        # plt.plot(sevrs, values)
+        # plt.scatter(sevrs, values)
+        plt.plot_date(dft, values, linestyle="solid", marker="None")
         plt.title(pvname)
         plt.xlabel(unit)
         plt.xticks(rotation=60)
-        plt.ylabel('vals')
+        plt.ylabel("vals")
         plt.show()
 
     def search(self, glob, do_print=True):
         return self._mgmt.search_pvs(glob, do_print=do_print)
+
     search.__doc__ = mgmt.ArchiveMgmt.search_pvs.__doc__
 
 
@@ -231,6 +242,7 @@ def interactive_args(start, end, unit):
     else:
         end = convert_date_arg(end, unit)
     return [start, end]
+
 
 @doc_sub(date_arg=date_arg.format("arg", "Arg", ""))
 def convert_date_arg(arg, unit):
