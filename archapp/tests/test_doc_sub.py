@@ -1,6 +1,7 @@
 import unittest
 from difflib import Differ
-from archapp.util.doc_sub import doc_sub
+
+from archapp.doc_sub import doc_sub
 
 sanity = \
 """

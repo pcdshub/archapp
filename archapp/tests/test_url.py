@@ -1,6 +1,6 @@
 import unittest
-from archapp.appliance import config
-from archapp.util import url as url_utils
+
+from archapp import url as url_utils
 
 sample_good_url = "http://pscaa02:17668/retrieval/data/getData.json?pv=XPP:USR:MMS:01&from=2016-11-11T20:23:03.000Z&to=2016-11-11T20:24:03.000Z&donotchunk"
 

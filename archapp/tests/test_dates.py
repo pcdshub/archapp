@@ -1,8 +1,9 @@
-import unittest
-import time
 import datetime as dt
+import time
+import unittest
 
-from archapp.util import dates
+from archapp import dates
+
 
 class DatesTestCase(unittest.TestCase):
     def test_utc_delta_type(self):

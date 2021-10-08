@@ -1,5 +1,7 @@
 import unittest
-from archapp.appliance import mgmt
+
+from archapp import mgmt
+
 
 class ArchiveMgmtTestCase(unittest.TestCase):
     def setUp(self):

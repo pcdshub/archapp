@@ -64,7 +64,10 @@ def list_print(data, width=0, do_print=True):
     text_data = [str(i) for i in data]
     col_width = max([len(i) for i in text_data]) + 2
     if width <= 0:
-        _, term_width = os.popen('stty size', 'r').read().split()
+        try:
+            _, term_width = os.popen('stty size', 'r').read().split()
+        except Exception:
+            term_width = 80
         term_width = int(term_width)
         if width < 0:
             term_width += width
