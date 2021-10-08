@@ -3,6 +3,7 @@ doc_sub defines docstring substitution macros
 """
 import re
 
+
 def doc_sub_txt(txt, **shared):
     """ 
     Returns a copy of docstring txt with the substitutions in **shared.

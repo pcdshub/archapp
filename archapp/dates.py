@@ -1,8 +1,9 @@
 """
 dates.py defines tools for working with timezones and units of time
 """
-import time
 import datetime as dt
+import time
+
 from .doc_sub import doc_sub_txt
 from .print_formats import list_print
 

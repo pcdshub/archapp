@@ -6,8 +6,7 @@ mgmt.py defines pv management interface
 from . import config
 from .doc_sub import doc_sub
 from .print_formats import list_print
-from .url import arch_url, get_json, PV_ARG
-from .url import hostname_doc, mgmt_port_doc
+from .url import PV_ARG, arch_url, get_json, hostname_doc, mgmt_port_doc
 
 MGMT_URL = "/mgmt/bpl/"
 

@@ -3,16 +3,15 @@ interactive.py defines ipython archive interface
 """
 
 import datetime as dt
+from datetime import datetime
+
 import numpy as np
 
-from datetime import datetime
-from . import config
-from . import data
-from . import mgmt
-from .doc_sub import doc_sub, doc_sub_txt
+from . import config, data, mgmt
 from .dates import days_map, units_rule
+from .doc_sub import doc_sub, doc_sub_txt
 from .print_formats import print_xarray
-from .url import hostname_doc, data_port_doc, mgmt_port_doc
+from .url import data_port_doc, hostname_doc, mgmt_port_doc
 
 interactive_args = \
 """

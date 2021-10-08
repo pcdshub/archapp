@@ -2,8 +2,9 @@
 print_formats.py defines utilities for formatting text data
 """
 
-import os
 import math
+import os
+
 
 def print_xarray(xarr, field, fill=True):
     """

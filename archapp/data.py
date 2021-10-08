@@ -1,17 +1,18 @@
 """
 data.py defines how to extract data from the archive appliance
 """
-import time
 import datetime as dt
+import time
+from datetime import datetime
+
 import numpy as np
 import xarray as xr
 
-from datetime import datetime
 from . import config
 from .dates import utc_delta
 from .doc_sub import doc_sub
-from .url import arch_url, get_json, hostname_doc, data_port_doc
-from .url import PV_ARG, URL_ARG, URL_FLAG
+from .url import (PV_ARG, URL_ARG, URL_FLAG, arch_url, data_port_doc, get_json,
+                  hostname_doc)
 
 GET_URL = "/retrieval/data/getData.json"
 

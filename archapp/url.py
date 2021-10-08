@@ -3,7 +3,10 @@ url.py defines basic url utilities
 """
 
 import signal
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
+
 try: import simplejson as json
 except: import json
 from .doc_sub import doc_sub
