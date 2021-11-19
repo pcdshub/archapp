@@ -145,6 +145,7 @@ class ArchiveData(object):
             # '["pv1", "pv2"]'
             data=json.dumps(list(pvs)).encode("utf-8"),
         )
+        request.add_header("Content-Type", "application/json")
         response = urllib.request.urlopen(request)
         if check_error(response):
             return {}
