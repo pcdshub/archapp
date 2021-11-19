@@ -161,6 +161,20 @@ class EpicsArchive(object):
         at: datetime,
         include_proxies: bool = True
     ) -> Dict[str, Any]:
+        """
+        Get a snapshot of PV data for the given PVs at the provided time.
+
+        Parameters
+        ----------
+        *pvs : str
+            The list of PV names.
+
+        at : datetime.datetime
+            The timestamp of the snapshot to request.
+
+        include_proxies : bool, optional
+            Allow the archiver appliance to use its internal proxies.
+        """
         pvs = sum((self._expand_pvnames(pv) for pv in pvs), [])
         if not pvs:
             raise ValueError(
