@@ -148,6 +148,11 @@ class EpicsArchive(object):
         xarr = self._data.get(pvs, dt_objs[0], dt_objs[1], chunk=chunk)
         if xarray:
             return xarr
+
+        # It's possible to get an empty response, so return an empty array:
+        if not len(xarr):
+            return np.zeros(0)
+
         # Unpack the xarray as a np.ndarray of just the values
         values = [np.datetime_as_string(xarr.time.values)]
         for var in xarr.variables:
@@ -175,7 +180,7 @@ class EpicsArchive(object):
         include_proxies : bool, optional
             Allow the archiver appliance to use its internal proxies.
         """
-        pvs = sum((self._expand_pvnames(pv) for pv in pvs), [])
+        pvs = sum((self._expand_pvnames(pv, validate=False) for pv in pvs), [])
         if not pvs:
             raise ValueError(
                 "Expected one or more PVs, or glob pattern did not match PVs "
@@ -185,7 +190,7 @@ class EpicsArchive(object):
             pvs=pvs, at=at, include_proxies=include_proxies
         )
 
-    def _expand_pvnames(self, pvname):
+    def _expand_pvnames(self, pvname, *, validate: bool = True):
         """
         Given globs or list of globs, expand to the full set of pvs to look up
 
@@ -194,13 +199,13 @@ class EpicsArchive(object):
         pvname : str, list/tuple of str
         """
         if isinstance(pvname, str):
-            if "*" in pvname or "?" in pvname:
+            if validate or ("*" in pvname or "?" in pvname):
                 return self.search(pvname, do_print=False)
             return [pvname]
         if isinstance(pvname, (list, tuple)):
             pvs = []
             for pv in pvname:
-                pvs.extend(self._expand_pvnames(pv))
+                pvs.extend(self._expand_pvnames(pv, validate=validate))
             return pvs
         raise Exception("pvname must be string, list, or tuple")
 

@@ -110,7 +110,7 @@ class ArchiveData(object):
         for pv in pvs:
             arrays.append(self.get(pv, start, end, chunk=chunk))
         if merge:
-            return xr.merge(arrays)
+            return xr.merge([arr for arr in arrays if arr.shape])
         return arrays
 
     def get_snapshot(
@@ -184,8 +184,14 @@ def make_xarray(data):
     #   - put 2d points with val, sevr, stat at timestamps
     #   - use meta to set array attributes
     #   - use most recent EGU PREC DESC, etc. to update meta values
-    points = data["data"]
-    meta = data["meta"]
+    try:
+        points = data["data"]
+        meta = data["meta"]
+    except KeyError:
+        # The appliance can return an empty dictionary. Return an empty xarray
+        # in that scenario.
+        return xr.DataArray()
+
     n_pts = len(points)
 
     # Allocate arrays

@@ -71,8 +71,8 @@ def get_json(url, timeout=1):
     signal.alarm(timeout)
     try:
         http = urllib.request.urlopen(url)
-    except (UrlTimeout, IOError):
-        print("No connection to archiver.")
+    except (UrlTimeout, IOError) as ex:
+        print(f"No connection to archiver. ({url} resulted in {ex})")
         return {}
     finally:
         signal.alarm(0)
