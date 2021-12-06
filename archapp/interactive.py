@@ -4,6 +4,7 @@ interactive.py defines ipython archive interface
 
 import datetime as dt
 from datetime import datetime
+from typing import Any, Dict
 
 import numpy as np
 
@@ -85,7 +86,8 @@ class EpicsArchive(object):
         Methods
         -------
         get
-            Return timeseries data from the archiver as an xarray or numpy array.
+            Return timeseries data from the archiver as an xarray or numpy
+            array.
 
         plot
             Plot timeseries data from the archiver in a new figure.
@@ -114,7 +116,8 @@ class EpicsArchive(object):
 
     @doc_sub(args=interactive_args)
     def get(
-        self, pvname=None, start=30, end=None, unit="days", chunk=False, xarray=False
+        self, pvname=None, start=30, end=None, unit="days", chunk=False,
+        xarray=False
     ):
         """
         Return timeseries data from the archiver.
@@ -134,7 +137,8 @@ class EpicsArchive(object):
             pvname = self._last_pvname
             if pvname is None:
                 raise ValueError(
-                    "No cached pvname. Must provide the " "first pvname of the session."
+                    "No cached pvname. Must provide the first pvname of "
+                    "the session."
                 )
         else:
             self._last_pvname = pvname
@@ -144,6 +148,11 @@ class EpicsArchive(object):
         xarr = self._data.get(pvs, dt_objs[0], dt_objs[1], chunk=chunk)
         if xarray:
             return xarr
+
+        # It's possible to get an empty response, so return an empty array:
+        if not len(xarr):
+            return np.zeros(0)
+
         # Unpack the xarray as a np.ndarray of just the values
         values = [np.datetime_as_string(xarr.time.values)]
         for var in xarr.variables:
@@ -151,22 +160,58 @@ class EpicsArchive(object):
                 values.append(xarr[var].values[0])
         return np.column_stack(values)
 
-    def _expand_pvnames(self, pvname):
+    def get_snapshot(
+        self,
+        *pvs: str,
+        at: datetime,
+        include_proxies: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Get a snapshot of PV data for the given PVs at the provided time.
+
+        Parameters
+        ----------
+        *pvs : str
+            The list of PV names.
+
+        at : datetime.datetime
+            The timestamp of the snapshot to request.
+
+        include_proxies : bool, optional
+            Allow the archiver appliance to use its internal proxies.
+        """
+        pvs = sum((self._expand_pvnames(pv, validate=False) for pv in pvs), [])
+        if not pvs:
+            raise ValueError(
+                "Expected one or more PVs, or glob pattern did not match PVs "
+                "in archiver."
+            )
+        return self._data.get_snapshot(
+            pvs=pvs, at=at, include_proxies=include_proxies
+        )
+
+    def _expand_pvnames(self, pvname, *, validate: bool = True):
         """
         Given globs or list of globs, expand to the full set of pvs to look up
+
+        Parameters
+        ----------
+        pvname : str, list/tuple of str
         """
         if isinstance(pvname, str):
-            return self.search(pvname, do_print=False)
-        elif isinstance(pvname, (list, tuple)):
+            if validate or ("*" in pvname or "?" in pvname):
+                return self.search(pvname, do_print=False)
+            return [pvname]
+        if isinstance(pvname, (list, tuple)):
             pvs = []
             for pv in pvname:
-                pvs.extend(self._expand_pvnames(pv))
+                pvs.extend(self._expand_pvnames(pv, validate=validate))
             return pvs
-        else:
-            raise Exception("pvname must be string, list, or tuple")
+        raise Exception("pvname must be string, list, or tuple")
 
     @doc_sub(args=interactive_args)
-    def prints(self, pvname=None, start=30, end=None, unit="days", chunk=False):
+    def prints(self, pvname=None, start=30, end=None, unit="days",
+               chunk=False):
         """
         Print timeseries data from the archiver.
 
@@ -175,7 +220,8 @@ class EpicsArchive(object):
         {args}
         """
         xarr = self.get(
-            pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True
+            pvname=pvname, start=start, end=end, unit=unit, chunk=chunk,
+            xarray=True
         )
         print_xarray(xarr, "vals")
 
@@ -195,17 +241,19 @@ class EpicsArchive(object):
         import matplotlib.pyplot as plt
 
         xarr = self.get(
-            pvname=pvname, start=start, end=end, unit=unit, chunk=chunk, xarray=True
+            pvname=pvname, start=start, end=end, unit=unit, chunk=chunk,
+            xarray=True
         )
         # print (xarr)
         df = xarr.to_dataframe()
         # return df
         values = df[pvname]["vals"]
-        sevrs = df[pvname]["sevr"]
+        # sevrs = df[pvname]["sevr"]
         # return values
         dft = xarr["time"].to_dataframe()["time"]
         # return xarr.to_dataframe()
-        # return xarr# DOING test_plot = arch.plot("pvname") --> test_plot.to_dataframe yeilds the same Pandas dataframe!
+        # return xarr# DOING test_plot = arch.plot("pvname")
+        # --> test_plot.to_dataframe yeilds the same Pandas dataframe!
 
         # plt.plot(sevrs, values)
         # plt.scatter(sevrs, values)
@@ -258,15 +306,9 @@ def convert_date_arg(arg, unit):
     date : datetime
     """
     if isinstance(arg, (list, tuple)):
-        try:
-            return dt.datetime(*arg)
-        except:
-            raise
+        return dt.datetime(*arg)
     elif not isinstance(arg, dt.datetime):
-        try:
-            days = days_map[unit] * float(arg)
-        except:
-            raise
+        days = days_map[unit] * float(arg)
         delta = dt.timedelta(days)
         return dt.datetime.now() - delta
     return arg

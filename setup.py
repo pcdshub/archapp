@@ -1,7 +1,6 @@
-import versioneer
 from setuptools import find_packages, setup
 
-import archapp
+import versioneer
 
 with open("requirements.txt", "rt") as fp:
     install_requires = [

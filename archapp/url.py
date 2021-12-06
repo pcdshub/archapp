@@ -9,7 +9,7 @@ import urllib.request
 
 try:
     import simplejson as json
-except:
+except ImportError:
     import json
 from .doc_sub import doc_sub
 
@@ -71,8 +71,8 @@ def get_json(url, timeout=1):
     signal.alarm(timeout)
     try:
         http = urllib.request.urlopen(url)
-    except (UrlTimeout, IOError):
-        print("No conection to archiver.")
+    except (UrlTimeout, IOError) as ex:
+        print(f"No connection to archiver. ({url} resulted in {ex})")
         return {}
     finally:
         signal.alarm(0)
@@ -82,8 +82,7 @@ def get_json(url, timeout=1):
     http.close()
     if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
         return data[0]
-    else:
-        return data
+    return data
 
 
 def url_quote(url):

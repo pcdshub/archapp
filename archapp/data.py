@@ -1,23 +1,24 @@
 """
 data.py defines how to extract data from the archive appliance
 """
+import json
+import urllib
+import urllib.parse
+import urllib.request
+from datetime import datetime
+from typing import Any, Dict, List
+
 import numpy as np
 import xarray as xr
 
 from . import config
 from .dates import utc_delta
 from .doc_sub import doc_sub
-from .url import (
-    PV_ARG,
-    URL_ARG,
-    URL_FLAG,
-    arch_url,
-    data_port_doc,
-    get_json,
-    hostname_doc,
-)
+from .url import (PV_ARG, URL_ARG, URL_FLAG, arch_url, check_error,
+                  data_port_doc, get_json, hostname_doc)
 
 GET_URL = "/retrieval/data/getData.json"
+GET_SNAPSHOT_URL = "/retrieval/data/getDataAtTime"
 
 url_args = """
 pvs : string or list of string
@@ -84,6 +85,7 @@ class ArchiveData(object):
         {data_port}
         """
         self.base_url = arch_url(hostname, data_port, GET_URL)
+        self.snapshot_url = arch_url(hostname, data_port, GET_SNAPSHOT_URL)
 
     @doc_sub(args=url_args, xarray=xarray_doc)
     def get(self, pvs, start, end, chunk=False, merge=True):
@@ -104,14 +106,50 @@ class ArchiveData(object):
         if isinstance(pvs, str):
             data = self.get_raw(pvs, start, end, chunk=chunk)
             return make_xarray(data)
-        else:
-            arrays = []
-            for pv in pvs:
-                arrays.append(self.get(pv, start, end, chunk=chunk))
-            if merge:
-                return xr.merge(arrays)
-            else:
-                return arrays
+        arrays = []
+        for pv in pvs:
+            arrays.append(self.get(pv, start, end, chunk=chunk))
+        if merge:
+            return xr.merge([arr for arr in arrays if arr.shape])
+        return arrays
+
+    def get_snapshot(
+        self,
+        pvs: List[str],
+        at: datetime,
+        include_proxies: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Parameters
+        ----------
+        pvs: list of str
+        at: datetime.datetime
+
+        Returns
+        -------
+        snapshot : dict of str to state
+            Where state is {...}
+        """
+        params = {
+            "at": date_spec(at),
+            "includeProxies": "true" if include_proxies else "false",
+        }
+        url_params = urllib.parse.urlencode(params)
+        if any('"' in pv for pv in pvs):
+            # Is it possible to escape these?
+            raise ValueError(f"PVs may not contain quotes: {pvs}")
+
+        request = urllib.request.Request(
+            url=f"{self.snapshot_url}?{url_params}",
+            # POST data should be something like:
+            # '["pv1", "pv2"]'
+            data=json.dumps(list(pvs)).encode("utf-8"),
+        )
+        request.add_header("Content-Type", "application/json")
+        response = urllib.request.urlopen(request)
+        if check_error(response):
+            return {}
+        return json.load(response)
 
     @doc_sub(args=url_args, raw=raw_doc)
     def get_raw(self, pv, start, end, chunk=False):
@@ -146,8 +184,14 @@ def make_xarray(data):
     #   - put 2d points with val, sevr, stat at timestamps
     #   - use meta to set array attributes
     #   - use most recent EGU PREC DESC, etc. to update meta values
-    points = data["data"]
-    meta = data["meta"]
+    try:
+        points = data["data"]
+        meta = data["meta"]
+    except KeyError:
+        # The appliance can return an empty dictionary. Return an empty xarray
+        # in that scenario.
+        return xr.DataArray()
+
     n_pts = len(points)
 
     # Allocate arrays
