@@ -47,7 +47,7 @@ class ArchiveMgmt(object):
         url += PV_ARG.format(glob)
         # Increase timeout on search calls because they take approx 5-6 secs
         # Call time is mostly independent of which glob we use
-        pvs = get_json(url, timeout=10)
+        pvs = get_json(url, timeout=20)
         if not pvs:
             pvs = []
         if do_print:
